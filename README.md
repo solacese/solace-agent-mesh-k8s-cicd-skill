@@ -1,54 +1,45 @@
 # Solace Agent Mesh k8s CI/CD Skill
 
-An agent skill for planning, implementing, upgrading, validating, and rolling back [Solace Agent Mesh](https://solace.com/products/agent-mesh/) deployments on Kubernetes.
+Agent skill for operating Solace Agent Mesh on Kubernetes. Gives AI coding agents the context to make correct, minimal changes to SAM deployments managed with Helm and Git.
 
-## What this is
+## What it does
 
-A knowledge-and-tooling skill that gives AI coding agents (Codex, Claude Code, etc.) the context they need to make correct, minimally disruptive changes to SAM on Kubernetes. It provides:
+- Change matrix: maps each request type to the exact surfaces, files, and commands that need editing.
+- Reference docs: platform surfaces, deployment workflows, versioning policy, validation and rollback.
+- Scripts: read-only namespace inventory and Helm release backup.
 
-- **Decision framework** — a change matrix mapping every common request to the exact control surfaces, files, and commands that need to change.
-- **Reference docs** — platform surfaces, deployment workflows, versioning policy, and validation/rollback procedures.
-- **Discovery and backup scripts** — read-only shell scripts to inventory a namespace and snapshot Helm releases before making changes.
+No credentials, no cluster-specific config, no write operations.
 
-## Quick start
+## Usage
 
-1. Drop this skill into your agent's skill directory (e.g. `skills/solace-agent-mesh-k8s-cicd/`).
-2. Run the inventory script to discover live topology:
-   ```bash
-   scripts/collect_sam_inventory.sh <namespace>
-   ```
-3. Back up any release you plan to touch:
-   ```bash
-   scripts/backup_helm_release.sh <namespace> <release>
-   ```
-4. Refer to `SKILL.md` for the full workflow and decision tree.
+```bash
+# Discover namespace state
+scripts/collect_sam_inventory.sh <namespace>
 
-## Repository structure
+# Snapshot a release before changing it
+scripts/backup_helm_release.sh <namespace> <release>
+```
+
+Then follow the workflow in [SKILL.md](SKILL.md).
+
+## Structure
 
 ```
-SKILL.md                                  # Skill definition and workflow entry point
-agents/openai.yaml                        # Agent interface metadata
+SKILL.md                                   Skill definition, rules, decision tree
+agents/openai.yaml                         Agent interface metadata
 scripts/
-  collect_sam_inventory.sh                 # Namespace inventory (read-only)
-  backup_helm_release.sh                   # Helm release backup (read-only)
+  collect_sam_inventory.sh                  Namespace inventory (read-only)
+  backup_helm_release.sh                   Helm release backup (read-only)
 references/
-  platform-surfaces.md                    # What each SAM control surface owns
-  change-matrix.md                        # What to edit for each change type
-  deployment-workflows.md                 # Step-by-step rollout patterns
-  versioning-and-release-policy.md        # Versioning rules and upgrade order
-  validation-and-rollback.md              # Smoke tests, checks, and rollback procedures
+  platform-surfaces.md                     Control surface definitions
+  change-matrix.md                         What to edit for each change type
+  deployment-workflows.md                  Step-by-step rollout patterns
+  versioning-and-release-policy.md         Versioning rules and upgrade order
+  validation-and-rollback.md               Smoke tests, checks, rollback procedures
 ```
 
-## Prerequisites
+## Requirements
 
-- `kubectl` configured with cluster access
+- `kubectl` with cluster access
 - `helm` 3.x
-- Namespace-level read access (the scripts only run `get`, `list`, `describe`, and `logs` commands)
-
-## Security
-
-This repository contains no credentials, cluster endpoints, or environment-specific configuration. All scripts are read-only. Secrets and connection details are expected to live in Kubernetes secrets and are referenced by name only.
-
-## License
-
-See [LICENSE](LICENSE) for details.
+- Namespace-level read permissions
